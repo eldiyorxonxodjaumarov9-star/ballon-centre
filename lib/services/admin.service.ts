@@ -1,12 +1,34 @@
 import { prisma, isMockMode } from "@/lib/db/prisma";
-import { BRANDS, CATEGORIES } from "@/lib/data/catalog";
+import { CATEGORIES } from "@/lib/data/catalog";
 import { getStoredOrders, getStoredProducts, saveStoredProducts } from "@/lib/data/mock-store";
 import { productWriteSchema } from "@/lib/validations";
 import { slugify } from "@/lib/utils";
-import type { Product } from "@/types";
+import type { Brand, Product } from "@/types";
 
 export function getExtraProducts(): Product[] {
   return getStoredProducts();
+}
+
+function brandFromName(brandName: string): Brand {
+  const name = brandName.trim();
+  const slug = slugify(name);
+  return {
+    id: `br-${slug}`,
+    slug,
+    name,
+    country: null,
+    isActive: true,
+  };
+}
+
+async function resolvePrismaBrand(brandName: string) {
+  const name = brandName.trim();
+  const slug = slugify(name);
+  return prisma.brand.upsert({
+    where: { slug },
+    create: { name, slug, country: null, isActive: true },
+    update: { name, isActive: true },
+  });
 }
 
 export async function adminStats() {
@@ -46,33 +68,35 @@ export async function adminListProducts() {
 
 export async function adminCreateProduct(input: unknown) {
   const data = productWriteSchema.parse(input);
+  const { brandName, ...rest } = data;
+  const brand = brandFromName(brandName);
+
   if (isMockMode()) {
-    const brand = BRANDS.find((b) => b.id === data.brandId) ?? BRANDS[0];
-    const category = CATEGORIES.find((c) => c.id === data.categoryId) ?? CATEGORIES[0];
+    const category = CATEGORIES.find((c) => c.id === rest.categoryId) ?? CATEGORIES[0];
     const product: Product = {
       id: `p-${Date.now()}`,
-      slug: slugify(`${brand.name}-${data.model}-${Date.now()}`),
-      name: data.name,
-      model: data.model,
-      description: data.description,
+      slug: slugify(`${brand.name}-${rest.model}-${Date.now()}`),
+      name: rest.name,
+      model: rest.model,
+      description: rest.description,
       brandId: brand.id,
       brand,
       categoryId: category.id,
       category,
-      images: data.images ?? [],
-      price: data.price,
-      oldPrice: data.oldPrice ?? null,
-      stock: data.stock,
-      width: data.width,
-      profile: data.profile,
-      diameter: data.diameter,
-      season: data.season,
-      loadIndex: data.loadIndex,
-      speedIndex: data.speedIndex,
-      country: data.country,
-      warranty: data.warranty,
-      featured: data.featured ?? true,
-      isActive: data.isActive ?? true,
+      images: rest.images ?? [],
+      price: rest.price,
+      oldPrice: rest.oldPrice ?? null,
+      stock: rest.stock,
+      width: rest.width,
+      profile: rest.profile,
+      diameter: rest.diameter,
+      season: rest.season,
+      loadIndex: rest.loadIndex,
+      speedIndex: rest.speedIndex,
+      country: rest.country,
+      warranty: rest.warranty,
+      featured: rest.featured ?? true,
+      isActive: rest.isActive ?? true,
       isArchived: false,
       soldCount: 0,
     };
@@ -80,11 +104,13 @@ export async function adminCreateProduct(input: unknown) {
     return product;
   }
 
+  const dbBrand = await resolvePrismaBrand(brandName);
   return prisma.product.create({
     data: {
-      ...data,
-      slug: slugify(`${data.name}-${data.model}-${Date.now()}`),
-      images: data.images ?? [],
+      ...rest,
+      brandId: dbBrand.id,
+      slug: slugify(`${rest.name}-${rest.model}-${Date.now()}`),
+      images: rest.images ?? [],
     },
     include: { brand: true, category: true },
   });
@@ -92,19 +118,33 @@ export async function adminCreateProduct(input: unknown) {
 
 export async function adminUpdateProduct(id: string, input: unknown) {
   const data = productWriteSchema.partial().parse(input);
+  const { brandName, ...rest } = data;
+
   if (isMockMode()) {
     const stored = getStoredProducts();
     const idx = stored.findIndex((p) => p.id === id);
     if (idx < 0) return null;
     const next = [...stored];
-    next[idx] = { ...next[idx], ...data } as Product;
+    const updated: Product = { ...next[idx], ...rest };
+    if (brandName !== undefined) {
+      const brand = brandFromName(brandName);
+      updated.brand = brand;
+      updated.brandId = brand.id;
+    }
+    next[idx] = updated;
     saveStoredProducts(next);
     return next[idx];
   }
 
+  const updateData: typeof rest & { brandId?: string } = { ...rest };
+  if (brandName !== undefined) {
+    const dbBrand = await resolvePrismaBrand(brandName);
+    updateData.brandId = dbBrand.id;
+  }
+
   return prisma.product.update({
     where: { id },
-    data,
+    data: updateData,
     include: { brand: true, category: true },
   });
 }

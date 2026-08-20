@@ -10,14 +10,14 @@ import { toast } from "sonner";
 import { ImagePlus, X } from "lucide-react";
 import { compressImage } from "@/lib/image/compress";
 import { formatPrice, groupThousands } from "@/lib/utils";
-import type { Brand, Category, Product, Season } from "@/types";
+import type { Category, Product, Season } from "@/types";
 
 const MAX_IMAGES = 6;
 
 const empty = {
   name: "",
   model: "",
-  brandId: "",
+  brandName: "",
   categoryId: "",
   description: "",
   price: "",
@@ -47,7 +47,7 @@ export function ProductForm({ product }: { product?: Product }) {
     ...empty,
     name: product?.name ?? "",
     model: product?.model ?? "",
-    brandId: product?.brandId ?? "",
+    brandName: product?.brand.name ?? "",
     categoryId: product?.categoryId ?? "",
     description: product?.description ?? "",
     price: product ? String(product.price) : "",
@@ -58,7 +58,6 @@ export function ProductForm({ product }: { product?: Product }) {
     diameter: product ? String(product.diameter) : "",
     season: product?.season ?? "SUMMER",
   });
-  const [brands, setBrands] = useState<Brand[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [images, setImages] = useState<string[]>(product?.images ?? []);
   const [uploading, setUploading] = useState(false);
@@ -83,9 +82,6 @@ export function ProductForm({ product }: { product?: Product }) {
   };
 
   useEffect(() => {
-    void fetch("/api/admin/brands")
-      .then((r) => r.json())
-      .then((d) => setBrands(d.brands ?? []));
     void fetch("/api/admin/categories")
       .then((r) => r.json())
       .then((d) => setCategories(d.categories ?? []));
@@ -99,6 +95,11 @@ export function ProductForm({ product }: { product?: Product }) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    const brandName = form.brandName.trim();
+    if (!brandName) {
+      toast.error("Brend nomini kiriting");
+      return;
+    }
     const price = toSom(form.price);
     if (!price || price <= 0) {
       toast.error("Narxni to‘g‘ri kiriting");
@@ -115,7 +116,7 @@ export function ProductForm({ product }: { product?: Product }) {
     const payload = {
       name: form.name || form.model,
       model: form.model,
-      brandId: form.brandId,
+      brandName,
       categoryId: form.categoryId,
       description: form.description,
       images: images.slice(0, MAX_IMAGES),
@@ -227,14 +228,12 @@ export function ProductForm({ product }: { product?: Product }) {
         <Input placeholder="Masalan: Primacy 4+" value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} required />
       </Field>
       <Field label="Brend">
-        <select className={selectClass} value={form.brandId} onChange={(e) => setForm({ ...form, brandId: e.target.value })} required>
-          <option value="">Brendni tanlang</option>
-          {brands.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
-        </select>
+        <Input
+          placeholder="Masalan: Michelin"
+          value={form.brandName}
+          onChange={(e) => setForm({ ...form, brandName: e.target.value })}
+          required
+        />
       </Field>
       <Field label="Kategoriya">
         <select className={selectClass} value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })} required>

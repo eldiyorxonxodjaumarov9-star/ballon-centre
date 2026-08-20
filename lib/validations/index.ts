@@ -50,7 +50,7 @@ export const productFilterSchema = z.object({
 export const productWriteSchema = z.object({
   name: z.string().trim().min(2).max(120),
   model: z.string().trim().min(1).max(80),
-  brandId: z.string().min(1),
+  brandName: z.string().trim().min(1).max(80),
   categoryId: z.string().min(1),
   description: z.string().trim().max(2000).optional(),
   images: z.array(z.string()).max(6).optional(),
