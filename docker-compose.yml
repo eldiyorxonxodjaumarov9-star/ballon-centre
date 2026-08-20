@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ballon-centre-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ballon
+      POSTGRES_PASSWORD: ballon
+      POSTGRES_DB: ballon_centre
+    ports:
+      - "5432:5432"
+    volumes:
+      - ballon_pg_data:/var/lib/postgresql/data
+
+volumes:
+  ballon_pg_data:

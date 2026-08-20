@@ -31,7 +31,14 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# nested scaffold leftover
+/ballon-centre
 
 # vercel
 .vercel
@@ -39,3 +46,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Secrets and runtime data
+.env
+.env.*
+!.env.example
+data/*.json
+public/uploads/
+.next/
+node_modules/
+*.log

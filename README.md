@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ballon Centre
 
-## Getting Started
+Telegram Mini App orqali ochiladigan premium ballon marketplace.
 
-First, run the development server:
+## Tezkor start (demo)
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Brauzerda: http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Admin panel: http://localhost:3000/admin/login  
+Parol: `.env` dagi `ADMIN_SECRET` (`dev-admin-secret-change-me`)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`USE_MOCK_DATA=true` bo‘lsa PostgreSQL shart emas — katalog demo ma’lumotdan ishlaydi.
 
-## Learn More
+## PostgreSQL + Prisma
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+docker compose up -d
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`.env` ichida `USE_MOCK_DATA="false"` qiling, keyin:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npx prisma migrate dev --name init
+npm run db:seed
+```
 
-## Deploy on Vercel
+## Telegram bot
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. [@BotFather](https://t.me/BotFather) orqali bot yarating.
+2. `BOT_TOKEN` va `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` ni `.env` ga yozing.
+3. Mini App URL ni BotFather `/newapp` orqali ulang (`NEXT_PUBLIC_APP_URL`).
+4. Lokal ishlatish uchun HTTPS tunnel (ngrok/cloudflare) kerak.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run bot
+```
+
+Webhook:
+
+```bash
+curl "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook?url=<NEXT_PUBLIC_APP_URL>/api/telegram/webhook"
+```
+
+## Asosiy buyruqlar
+
+- `npm run lint`
+- `npm run typecheck`
+- `npm run build`
