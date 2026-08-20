@@ -112,6 +112,18 @@ export interface TelegramUser {
   photo_url?: string;
 }
 
+export interface CustomerAccount {
+  telegramId: string;
+  firstName: string;
+  lastName?: string | null;
+  username?: string | null;
+  languageCode?: string | null;
+  photoUrl?: string | null;
+  phone: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ProductFilters {
   q?: string;
   brand?: string;

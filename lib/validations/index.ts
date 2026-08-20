@@ -84,6 +84,11 @@ export const adminLoginSchema = z.object({
   password: z.string().min(6, "Parol kamida 6 belgi bo'lsin"),
 });
 
+export const customerRegistrationSchema = z.object({
+  firstName: z.string().trim().min(2, "Ism kamida 2 belgi bo‘lsin").max(80, "Ism juda uzun"),
+  phone: z.string().trim().min(9, "Telefon raqamini kiriting").max(20),
+});
+
 export const orderStatusSchema = z.object({
   status: z.enum(["NEW", "DELIVERED", "PICKED_UP", "CONFIRMED", "PROCESSING", "DELIVERING", "COMPLETED", "CANCELLED"]),
 });

@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/header";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { PageTransition } from "@/components/layout/page-transition";
 import { SearchOverlay } from "@/components/search/search-overlay";
+import { CustomerRegistrationModal } from "@/components/auth/customer-registration-modal";
 import { Toaster } from "sonner";
 import { useCart } from "@/hooks/use-cart";
 import type { ReactNode } from "react";
@@ -28,6 +29,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </main>
       {isAdmin ? null : <BottomNav />}
       {isAdmin ? null : <SearchOverlay />}
+      {isAdmin ? null : <CustomerRegistrationModal />}
       {toastsReady ? (
         <Toaster
           theme="dark"

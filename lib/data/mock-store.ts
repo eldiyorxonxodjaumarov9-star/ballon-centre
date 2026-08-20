@@ -1,11 +1,12 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
-import type { Order, PaymentCard, Product } from "@/types";
+import type { CustomerAccount, Order, PaymentCard, Product } from "@/types";
 
 const dir = path.join(process.cwd(), "data");
 const productsFile = path.join(dir, "products.json");
 const ordersFile = path.join(dir, "orders.json");
 const settingsFile = path.join(dir, "settings.json");
+const usersFile = path.join(dir, "users.json");
 
 type ShopSettings = {
   paymentCards: PaymentCard[];
@@ -17,6 +18,7 @@ const DEFAULT_USD_RATE = 12_500;
 const globalForStore = globalThis as unknown as {
   mockProducts?: Product[];
   mockOrders?: Order[];
+  mockUsers?: CustomerAccount[];
   shopSettings?: ShopSettings;
 };
 
@@ -208,4 +210,30 @@ export function deletePaymentCard(id: string): boolean {
   }
   saveSettings({ paymentCards: next });
   return true;
+}
+
+function users(): CustomerAccount[] {
+  if (!globalForStore.mockUsers) {
+    globalForStore.mockUsers = readJson<CustomerAccount[]>(usersFile, []);
+  }
+  return globalForStore.mockUsers;
+}
+
+export function getStoredUsers(): CustomerAccount[] {
+  return users();
+}
+
+export function getStoredUserByTelegramId(telegramId: string): CustomerAccount | null {
+  return users().find((user) => user.telegramId === telegramId) ?? null;
+}
+
+export function saveStoredUser(account: CustomerAccount): CustomerAccount {
+  const current = users();
+  const idx = current.findIndex((user) => user.telegramId === account.telegramId);
+  const next = [...current];
+  if (idx >= 0) next[idx] = account;
+  else next.unshift(account);
+  globalForStore.mockUsers = next;
+  writeJson(usersFile, next);
+  return account;
 }
