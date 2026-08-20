@@ -100,7 +100,12 @@ function mapProduct(product: {
     isActive: boolean;
   };
 }): Product {
-  return product;
+  return {
+    ...product,
+    width: String(product.width),
+    profile: String(product.profile),
+    diameter: String(product.diameter),
+  };
 }
 
 export async function listProducts(filters: ProductFilters = {}): Promise<Product[]> {
