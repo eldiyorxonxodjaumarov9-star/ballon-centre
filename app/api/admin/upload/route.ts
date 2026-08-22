@@ -1,8 +1,14 @@
-import { mkdir, writeFile } from "fs/promises";
+import { writeFile } from "fs/promises";
 import path from "path";
 import { NextRequest } from "next/server";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { jsonError } from "@/lib/api/http";
+import {
+  extFromMime,
+  getProductsUploadDir,
+  productMediaUrl,
+  uniqueProductFilename,
+} from "@/lib/uploads/storage";
 
 export const dynamic = "force-dynamic";
 
@@ -19,18 +25,18 @@ export async function POST(request: NextRequest) {
     if (!files.length) return jsonError("Rasm tanlanmadi");
     if (files.length > 6) return jsonError("Bir mahsulotga maksimal 6 ta rasm");
 
-    const dir = path.join(process.cwd(), "public", "uploads", "products");
-    await mkdir(dir, { recursive: true });
-
+    const dir = getProductsUploadDir();
     const urls: string[] = [];
+
     for (const file of files.slice(0, 6)) {
       if (!ALLOWED.has(file.type)) return jsonError("Faqat JPG, PNG yoki WEBP rasm yuklang");
       if (file.size > MAX_SIZE) return jsonError("Rasm 6 MB dan katta bo‘lmasin");
-      const ext = file.type.includes("png") ? "png" : file.type.includes("webp") ? "webp" : "jpg";
-      const name = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const ext = extFromMime(file.type);
+      if (!ext) return jsonError("Faqat JPG, PNG yoki WEBP rasm yuklang");
+      const name = uniqueProductFilename(ext);
       const bytes = Buffer.from(await file.arrayBuffer());
       await writeFile(path.join(dir, name), bytes);
-      urls.push(`/uploads/products/${name}`);
+      urls.push(productMediaUrl(name));
     }
 
     return Response.json({ urls });

@@ -10,15 +10,32 @@ import { toast } from "sonner";
 import { ImagePlus, X } from "lucide-react";
 import { compressImage } from "@/lib/image/compress";
 import { formatPrice, groupThousands } from "@/lib/utils";
+import { ProductImage } from "@/components/product/product-image";
+import { TireVisual } from "@/components/product/tire-visual";
 import type { Category, Product, Season } from "@/types";
 
 const MAX_IMAGES = 6;
+
+const COUNTRY_SUGGESTIONS = [
+  "O‘zbekiston",
+  "Xitoy",
+  "Rossiya",
+  "Turkiya",
+  "Yaponiya",
+  "Janubiy Koreya",
+  "Germaniya",
+  "Fransiya",
+  "Italiya",
+  "Finlandiya",
+  "AQSH",
+];
 
 const empty = {
   name: "",
   model: "",
   brandName: "",
   categoryId: "",
+  country: "",
   description: "",
   price: "",
   oldPrice: "",
@@ -43,15 +60,25 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 }
 
 export function ProductForm({ product }: { product?: Product }) {
+  const initialCurrency: MoneyCurrency = product?.priceCurrency === "USD" ? "USD" : "UZS";
   const [form, setForm] = useState({
     ...empty,
     name: product?.name ?? "",
     model: product?.model ?? "",
     brandName: product?.brand.name ?? "",
     categoryId: product?.categoryId ?? "",
+    country: product?.country ?? "",
     description: product?.description ?? "",
-    price: product ? String(product.price) : "",
-    oldPrice: product?.oldPrice ? String(product.oldPrice) : "",
+    price: product
+      ? initialCurrency === "USD" && product.originalPrice != null
+        ? String(product.originalPrice)
+        : String(product.price)
+      : "",
+    oldPrice: product?.oldPrice
+      ? initialCurrency === "USD" && product.originalOldPrice != null
+        ? String(product.originalOldPrice)
+        : String(product.oldPrice)
+      : "",
     stock: product ? String(product.stock) : "",
     width: product ? String(product.width) : "",
     profile: product ? String(product.profile) : "",
@@ -62,8 +89,8 @@ export function ProductForm({ product }: { product?: Product }) {
   const [images, setImages] = useState<string[]>(product?.images ?? []);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [currency, setCurrency] = useState<MoneyCurrency>("UZS");
-  const [usdRate, setUsdRate] = useState("12500");
+  const [currency, setCurrency] = useState<MoneyCurrency>(initialCurrency);
+  const [usdRate, setUsdRate] = useState(product?.usdRateAtEntry ? String(product.usdRateAtEntry) : "12500");
   const router = useRouter();
 
   const selectedCategory = categories.find((c) => c.id === form.categoryId);
@@ -100,6 +127,11 @@ export function ProductForm({ product }: { product?: Product }) {
       toast.error("Brend nomini kiriting");
       return;
     }
+    const country = form.country.trim();
+    if (country.length < 2 || country.length > 80) {
+      toast.error("Ishlab chiqarilgan davlatni kiriting");
+      return;
+    }
     const price = toSom(form.price);
     if (!price || price <= 0) {
       toast.error("Narxni to‘g‘ri kiriting");
@@ -122,6 +154,10 @@ export function ProductForm({ product }: { product?: Product }) {
       images: images.slice(0, MAX_IMAGES),
       price,
       oldPrice: form.oldPrice ? toSom(form.oldPrice) : null,
+      priceCurrency: currency,
+      originalPrice: currency === "USD" && form.price ? Math.round(Number(form.price)) : null,
+      originalOldPrice: currency === "USD" && form.oldPrice ? Math.round(Number(form.oldPrice)) : null,
+      usdRateAtEntry: currency === "USD" ? rate : null,
       stock: Number(form.stock || 0),
       width: (form.width || "—").trim(),
       profile: (form.profile || "—").trim(),
@@ -129,7 +165,7 @@ export function ProductForm({ product }: { product?: Product }) {
       season: form.season,
       loadIndex: kind === "battery" ? "CCA" : "91",
       speedIndex: kind === "rim" ? "ET" : "V",
-      country: "O‘zbekiston",
+      country,
       warranty: "2 yil",
       featured: false,
       isActive: true,
@@ -192,8 +228,16 @@ export function ProductForm({ product }: { product?: Product }) {
         <div className="grid grid-cols-3 gap-2">
           {images.map((src) => (
             <div key={src} className="relative aspect-square overflow-hidden rounded-2xl border border-white/10 bg-[#0c0818]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src} alt="" className="absolute inset-0 h-full w-full object-contain p-1" />
+              <ProductImage
+                src={src}
+                alt=""
+                imgClassName="absolute inset-0 h-full w-full object-contain p-1"
+                fallback={
+                  <div className="absolute inset-0 flex items-center justify-center text-2xl">
+                    {selectedCategory?.emoji ?? "🛞"}
+                  </div>
+                }
+              />
               <button
                 type="button"
                 className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70"
@@ -244,6 +288,21 @@ export function ProductForm({ product }: { product?: Product }) {
             </option>
           ))}
         </select>
+      </Field>
+      <Field label="Ishlab chiqarilgan davlat">
+        <Input
+          list="country-suggestions"
+          placeholder="Masalan: Xitoy"
+          value={form.country}
+          onChange={(e) => setForm({ ...form, country: e.target.value })}
+          required
+          maxLength={80}
+        />
+        <datalist id="country-suggestions">
+          {COUNTRY_SUGGESTIONS.map((item) => (
+            <option key={item} value={item} />
+          ))}
+        </datalist>
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Valyuta">

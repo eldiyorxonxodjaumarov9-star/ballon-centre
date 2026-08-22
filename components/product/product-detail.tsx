@@ -9,7 +9,7 @@ import { ProductGallery } from "@/components/product/product-gallery";
 import { QuantityStepper } from "@/components/cart/quantity-stepper";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { discountPercent, formatPrice, formatProductSpec, productKind } from "@/lib/utils";
+import { formatProductPrice, formatProductSpec, productDiscountPercent, productKind } from "@/lib/utils";
 import { SEASON_LABEL } from "@/lib/constants";
 import { useCart } from "@/hooks/use-cart";
 import { haptic } from "@/lib/telegram/webapp";
@@ -21,7 +21,7 @@ export function ProductDetail({ product }: { product: Product }) {
   const [galleryOpen, setGalleryOpen] = useState(false);
   const size = formatProductSpec(product);
   const kind = productKind(product);
-  const discount = discountPercent(product.price, product.oldPrice);
+  const discount = productDiscountPercent(product);
   const inStock = product.stock > 0;
   const images = (product.images ?? []).filter(Boolean).slice(0, 6);
 
@@ -83,8 +83,10 @@ export function ProductDetail({ product }: { product: Product }) {
       <p className="mt-1 text-sm text-[#9CA3AF]">{size}</p>
 
       <div className="mt-4 flex items-end gap-3">
-        <p className="text-3xl font-bold">{formatPrice(product.price)}</p>
-        {product.oldPrice ? <p className="pb-1 text-sm text-[#9CA3AF] line-through">{formatPrice(product.oldPrice)}</p> : null}
+        <p className="text-3xl font-bold">{formatProductPrice(product)}</p>
+        {product.oldPrice || product.originalOldPrice ? (
+          <p className="pb-1 text-sm text-[#9CA3AF] line-through">{formatProductPrice(product, { old: true })}</p>
+        ) : null}
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">

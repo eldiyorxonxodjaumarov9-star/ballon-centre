@@ -2,7 +2,8 @@
 
 import { Trash2 } from "lucide-react";
 import type { CartItem } from "@/types";
-import { formatPrice, formatProductSpec, productKind } from "@/lib/utils";
+import { formatProductPrice, formatProductSpec, productKind } from "@/lib/utils";
+import { ProductImage } from "@/components/product/product-image";
 import { useCart } from "@/hooks/use-cart";
 import { TireVisual } from "@/components/product/tire-visual";
 import { QuantityStepper } from "@/components/cart/quantity-stepper";
@@ -18,19 +19,21 @@ export function CartLine({ item }: { item: CartItem }) {
   return (
     <article className="premium-card flex gap-3 rounded-3xl p-3">
       <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-[#0c0818]">
-        {product.images?.[0] ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={product.images[0]} alt={product.model} className="absolute inset-0 h-full w-full object-contain p-1" />
-        ) : (
-          <TireVisual
-            brand={product.brand.name}
-            model={product.model}
-            size={size}
-            season={product.season}
-            variant={productKind(product)}
-            className="h-full w-full"
-          />
-        )}
+        <ProductImage
+          src={product.images?.[0]}
+          alt={product.model}
+          imgClassName="absolute inset-0 h-full w-full object-contain p-1"
+          fallback={
+            <TireVisual
+              brand={product.brand.name}
+              model={product.model}
+              size={size}
+              season={product.season}
+              variant={productKind(product)}
+              className="h-full w-full"
+            />
+          }
+        />
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-start justify-between gap-2">
@@ -52,7 +55,7 @@ export function CartLine({ item }: { item: CartItem }) {
           </button>
         </div>
         <div className="mt-auto flex items-center justify-between gap-2 pt-3">
-          <p className="min-w-0 truncate text-sm font-bold">{formatPrice(product.price * item.quantity)}</p>
+          <p className="min-w-0 truncate text-sm font-bold">{formatProductPrice(product, { quantity: item.quantity })}</p>
           <QuantityStepper
             value={item.quantity}
             min={0}

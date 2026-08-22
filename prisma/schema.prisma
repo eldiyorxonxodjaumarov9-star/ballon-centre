@@ -47,6 +47,11 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum PriceCurrency {
+  UZS
+  USD
+}
+
 model User {
   id           String    @id @default(cuid())
   telegramId   String    @unique
@@ -103,9 +108,13 @@ model Product {
   categoryId  String
   category    Category    @relation(fields: [categoryId], references: [id])
   images      String[]
-  price       Int
-  oldPrice    Int?
-  stock       Int         @default(0)
+  price             Int
+  oldPrice          Int?
+  priceCurrency     PriceCurrency @default(UZS)
+  originalPrice     Int?
+  originalOldPrice  Int?
+  usdRateAtEntry    Int?
+  stock             Int           @default(0)
   width       String
   profile     String
   diameter    String

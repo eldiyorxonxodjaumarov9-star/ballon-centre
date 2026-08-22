@@ -5,7 +5,8 @@ import { toast } from "sonner";
 import type { Product } from "@/types";
 import { TireVisual } from "@/components/product/tire-visual";
 import { QuantityStepper } from "@/components/cart/quantity-stepper";
-import { discountPercent, formatPrice, formatProductSpec, productKind } from "@/lib/utils";
+import { formatProductPrice, formatProductSpec, productDiscountPercent, productKind } from "@/lib/utils";
+import { ProductImage } from "@/components/product/product-image";
 import { SEASON_LABEL } from "@/lib/constants";
 import { useCart } from "@/hooks/use-cart";
 import { haptic } from "@/lib/telegram/webapp";
@@ -14,7 +15,7 @@ export function ProductCard({ product }: { product: Product }) {
   const add = useCart((s) => s.add);
   const setQuantity = useCart((s) => s.setQuantity);
   const quantity = useCart((s) => s.items.find((item) => item.productId === product.id)?.quantity ?? 0);
-  const discount = discountPercent(product.price, product.oldPrice);
+  const discount = productDiscountPercent(product);
   const size = formatProductSpec(product);
   const kind = productKind(product);
   const inStock = product.stock > 0;
@@ -23,23 +24,21 @@ export function ProductCard({ product }: { product: Product }) {
     <article className="premium-card flex h-full min-w-0 flex-col overflow-hidden rounded-3xl">
       <Link href={`/product/${product.slug}`} className="block min-w-0">
         <div className="relative aspect-square overflow-hidden bg-[#0c0818]">
-          {product.images?.[0] ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={product.images[0]}
-              alt={product.model}
-              className="absolute inset-0 h-full w-full object-contain p-2"
-            />
-          ) : (
-            <TireVisual
-              brand={product.brand.name}
-              model={product.model}
-              size={size}
-              season={product.season}
-              className="absolute inset-0 h-full w-full"
-              variant={kind}
-            />
-          )}
+          <ProductImage
+            src={product.images?.[0]}
+            alt={product.model}
+            imgClassName="absolute inset-0 h-full w-full object-contain p-2"
+            fallback={
+              <TireVisual
+                brand={product.brand.name}
+                model={product.model}
+                size={size}
+                season={product.season}
+                className="absolute inset-0 h-full w-full"
+                variant={kind}
+              />
+            }
+          />
           <div className="absolute inset-x-2 top-2 z-20 flex items-start justify-between gap-1">
             {discount ? (
               <span className="shrink-0 rounded-full bg-[#3f2a9b] px-2 py-0.5 text-[9px] font-bold text-white">
@@ -66,9 +65,9 @@ export function ProductCard({ product }: { product: Product }) {
             {kind === "tire" ? `${size} · ${SEASON_LABEL[product.season]}` : size}
           </p>
           <div className="mt-2 flex min-w-0 items-end gap-1.5">
-            <p className="truncate text-[13px] leading-tight font-bold tracking-tight">{formatPrice(product.price)}</p>
-            {product.oldPrice ? (
-              <p className="truncate pb-0.5 text-[10px] text-[#9CA3AF] line-through">{formatPrice(product.oldPrice)}</p>
+            <p className="truncate text-[13px] leading-tight font-bold tracking-tight">{formatProductPrice(product)}</p>
+            {product.oldPrice || product.originalOldPrice ? (
+              <p className="truncate pb-0.5 text-[10px] text-[#9CA3AF] line-through">{formatProductPrice(product, { old: true })}</p>
             ) : null}
           </div>
         </div>

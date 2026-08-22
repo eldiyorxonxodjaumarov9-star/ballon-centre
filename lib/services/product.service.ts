@@ -1,6 +1,7 @@
 import { prisma, isMockMode } from "@/lib/db/prisma";
 import { BRANDS, CATEGORIES } from "@/lib/data/catalog";
 import { getExtraProducts } from "@/lib/services/admin.service";
+import { normalizeProduct } from "@/lib/products/normalize";
 import type { Product, ProductFilters } from "@/types";
 
 function matchesQuery(product: Product, q?: string): boolean {
@@ -42,7 +43,7 @@ export function filterProducts(products: Product[], filters: ProductFilters): Pr
     if (filters.profile != null && String(product.profile) !== String(filters.profile)) return false;
     if (filters.season && product.season !== filters.season) return false;
     if (filters.inStock && product.stock <= 0) return false;
-    if (filters.discount && !product.oldPrice) return false;
+    if (filters.discount && !product.oldPrice && !product.originalOldPrice) return false;
     return true;
   });
 
@@ -63,49 +64,8 @@ export function filterProducts(products: Product[], filters: ProductFilters): Pr
   return result;
 }
 
-function mapProduct(product: {
-  id: string;
-  slug: string;
-  name: string;
-  model: string;
-  description: string | null;
-  brandId: string;
-  categoryId: string;
-  images: string[];
-  price: number;
-  oldPrice: number | null;
-  stock: number;
-  width: string | number;
-  profile: string | number;
-  diameter: string | number;
-  season: Product["season"];
-  loadIndex: string;
-  speedIndex: string;
-  country: string;
-  warranty: string;
-  featured: boolean;
-  isActive: boolean;
-  isArchived: boolean;
-  soldCount: number;
-  brand: { id: string; slug: string; name: string; logoUrl: string | null; country: string | null; isActive: boolean };
-  category: {
-    id: string;
-    slug: string;
-    name: string;
-    nameUz: string;
-    emoji: string;
-    imageUrl: string | null;
-    description: string | null;
-    sortOrder: number;
-    isActive: boolean;
-  };
-}): Product {
-  return {
-    ...product,
-    width: String(product.width),
-    profile: String(product.profile),
-    diameter: String(product.diameter),
-  };
+function mapProduct(product: Parameters<typeof normalizeProduct>[0]): Product {
+  return normalizeProduct(product);
 }
 
 export async function listProducts(filters: ProductFilters = {}): Promise<Product[]> {
@@ -124,7 +84,8 @@ export async function listProducts(filters: ProductFilters = {}): Promise<Produc
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   if (isMockMode()) {
-    return getExtraProducts().find((p) => p.slug === slug && p.isActive && !p.isArchived) ?? null;
+    const product = getExtraProducts().find((p) => p.slug === slug && p.isActive && !p.isArchived);
+    return product ? normalizeProduct(product) : null;
   }
 
   const product = await prisma.product.findFirst({
@@ -136,7 +97,8 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 
 export async function getProductById(id: string): Promise<Product | null> {
   if (isMockMode()) {
-    return getExtraProducts().find((p) => p.id === id) ?? null;
+    const product = getExtraProducts().find((p) => p.id === id);
+    return product ? normalizeProduct(product) : null;
   }
 
   const product = await prisma.product.findUnique({

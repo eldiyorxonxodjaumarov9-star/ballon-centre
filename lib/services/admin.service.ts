@@ -1,12 +1,14 @@
 import { prisma, isMockMode } from "@/lib/db/prisma";
 import { CATEGORIES } from "@/lib/data/catalog";
 import { getStoredOrders, getStoredProducts, saveStoredProducts } from "@/lib/data/mock-store";
+import { normalizeProduct } from "@/lib/products/normalize";
+import { normalizeProductImages } from "@/lib/uploads/storage";
 import { productWriteSchema } from "@/lib/validations";
 import { slugify } from "@/lib/utils";
 import type { Brand, Product } from "@/types";
 
 export function getExtraProducts(): Product[] {
-  return getStoredProducts();
+  return getStoredProducts().map(normalizeProduct);
 }
 
 function brandFromName(brandName: string): Brand {
@@ -62,8 +64,9 @@ export async function adminStats() {
 }
 
 export async function adminListProducts() {
-  if (isMockMode()) return getStoredProducts();
-  return prisma.product.findMany({ include: { brand: true, category: true }, orderBy: { updatedAt: "desc" } });
+  if (isMockMode()) return getExtraProducts();
+  const products = await prisma.product.findMany({ include: { brand: true, category: true }, orderBy: { updatedAt: "desc" } });
+  return products.map((product) => normalizeProduct(product));
 }
 
 export async function adminCreateProduct(input: unknown) {
@@ -73,7 +76,7 @@ export async function adminCreateProduct(input: unknown) {
 
   if (isMockMode()) {
     const category = CATEGORIES.find((c) => c.id === rest.categoryId) ?? CATEGORIES[0];
-    const product: Product = {
+    const product: Product = normalizeProduct({
       id: `p-${Date.now()}`,
       slug: slugify(`${brand.name}-${rest.model}-${Date.now()}`),
       name: rest.name,
@@ -83,9 +86,13 @@ export async function adminCreateProduct(input: unknown) {
       brand,
       categoryId: category.id,
       category,
-      images: rest.images ?? [],
+      images: normalizeProductImages(rest.images ?? []),
       price: rest.price,
       oldPrice: rest.oldPrice ?? null,
+      priceCurrency: rest.priceCurrency ?? "UZS",
+      originalPrice: rest.originalPrice ?? null,
+      originalOldPrice: rest.originalOldPrice ?? null,
+      usdRateAtEntry: rest.usdRateAtEntry ?? null,
       stock: rest.stock,
       width: rest.width,
       profile: rest.profile,
@@ -99,7 +106,7 @@ export async function adminCreateProduct(input: unknown) {
       isActive: rest.isActive ?? true,
       isArchived: false,
       soldCount: 0,
-    };
+    });
     saveStoredProducts([product, ...getStoredProducts()]);
     return product;
   }
@@ -110,10 +117,10 @@ export async function adminCreateProduct(input: unknown) {
       ...rest,
       brandId: dbBrand.id,
       slug: slugify(`${rest.name}-${rest.model}-${Date.now()}`),
-      images: rest.images ?? [],
+      images: normalizeProductImages(rest.images ?? []),
     },
     include: { brand: true, category: true },
-  });
+  }).then((product) => normalizeProduct(product));
 }
 
 export async function adminUpdateProduct(id: string, input: unknown) {
@@ -125,7 +132,11 @@ export async function adminUpdateProduct(id: string, input: unknown) {
     const idx = stored.findIndex((p) => p.id === id);
     if (idx < 0) return null;
     const next = [...stored];
-    const updated: Product = { ...next[idx], ...rest };
+    const updated: Product = normalizeProduct({
+      ...next[idx],
+      ...rest,
+      ...(rest.images ? { images: normalizeProductImages(rest.images) } : {}),
+    });
     if (brandName !== undefined) {
       const brand = brandFromName(brandName);
       updated.brand = brand;
@@ -136,7 +147,10 @@ export async function adminUpdateProduct(id: string, input: unknown) {
     return next[idx];
   }
 
-  const updateData: typeof rest & { brandId?: string } = { ...rest };
+  const updateData: typeof rest & { brandId?: string; images?: string[] } = {
+    ...rest,
+    ...(rest.images ? { images: normalizeProductImages(rest.images) } : {}),
+  };
   if (brandName !== undefined) {
     const dbBrand = await resolvePrismaBrand(brandName);
     updateData.brandId = dbBrand.id;
@@ -146,7 +160,7 @@ export async function adminUpdateProduct(id: string, input: unknown) {
     where: { id },
     data: updateData,
     include: { brand: true, category: true },
-  });
+  }).then((product) => normalizeProduct(product));
 }
 
 export async function adminArchiveProduct(id: string) {

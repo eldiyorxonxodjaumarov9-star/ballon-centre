@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import type { PriceCurrency, Product } from "@/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -21,6 +22,42 @@ export function groupThousands(value: number | string): string {
 
 export function formatPrice(amount: number): string {
   return `${groupThousands(amount)} so'm`;
+}
+
+export function formatUsdPrice(amount: number): string {
+  return `$${groupThousands(amount)}`;
+}
+
+export function productPriceCurrency(product: Pick<Product, "priceCurrency">): PriceCurrency {
+  return product.priceCurrency ?? "UZS";
+}
+
+export function formatProductPrice(
+  product: Pick<Product, "price" | "oldPrice" | "priceCurrency" | "originalPrice" | "originalOldPrice">,
+  options?: { quantity?: number; old?: boolean },
+): string {
+  const qty = options?.quantity ?? 1;
+  const currency = productPriceCurrency(product);
+
+  if (currency === "USD") {
+    const amount = options?.old
+      ? (product.originalOldPrice ?? product.oldPrice ?? 0)
+      : (product.originalPrice ?? product.price);
+    return formatUsdPrice(amount * qty);
+  }
+
+  const amount = options?.old ? (product.oldPrice ?? 0) : product.price;
+  return formatPrice(amount * qty);
+}
+
+export function productDiscountPercent(product: Pick<Product, "price" | "oldPrice" | "priceCurrency" | "originalPrice" | "originalOldPrice">): number | null {
+  const currency = productPriceCurrency(product);
+  if (currency === "USD") {
+    const price = product.originalPrice;
+    const oldPrice = product.originalOldPrice;
+    return discountPercent(price ?? 0, oldPrice);
+  }
+  return discountPercent(product.price, product.oldPrice);
 }
 
 export function formatSize(width: string | number, profile: string | number, diameter: string | number): string {

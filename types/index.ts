@@ -11,6 +11,7 @@ export type OrderStatus =
 export type DeliveryType = "COURIER" | "PICKUP";
 export type PaymentMethod = "CASH" | "CARD" | "TRANSFER";
 export type SortOption = "popular" | "new" | "price_asc" | "price_desc";
+export type PriceCurrency = "UZS" | "USD";
 
 export interface Brand {
   id: string;
@@ -46,6 +47,10 @@ export interface Product {
   images: string[];
   price: number;
   oldPrice?: number | null;
+  priceCurrency?: PriceCurrency;
+  originalPrice?: number | null;
+  originalOldPrice?: number | null;
+  usdRateAtEntry?: number | null;
   stock: number;
   width: string;
   profile: string;

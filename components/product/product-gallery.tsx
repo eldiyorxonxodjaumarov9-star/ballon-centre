@@ -13,6 +13,21 @@ type ProductGalleryProps = {
   onOpenChange: (open: boolean) => void;
 };
 
+function GalleryImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div className={`flex items-center justify-center bg-[#120a28] text-4xl ${className ?? ""}`} aria-hidden>
+        🛞
+      </div>
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} className={className} onError={() => setFailed(true)} />
+  );
+}
+
 export function ProductGallery({ images, alt, badge, open, onOpenChange }: ProductGalleryProps) {
   const [index, setIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
@@ -65,7 +80,7 @@ export function ProductGallery({ images, alt, badge, open, onOpenChange }: Produ
           aria-label="Rasmni ochish"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={current} alt={alt} className="absolute inset-0 h-full w-full object-contain p-2" />
+          <GalleryImage src={current} alt={alt} className="absolute inset-0 h-full w-full object-contain p-2" />
         </button>
         {badge}
         {total > 1 ? (
@@ -125,8 +140,7 @@ export function ProductGallery({ images, alt, badge, open, onOpenChange }: Produ
                         i === index ? "border-white" : "border-white/20 opacity-70"
                       }`}
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={src} alt="" className="h-full w-full object-cover" />
+                      <GalleryImage src={src} alt="" className="h-full w-full object-cover" />
                     </button>
                   ))}
                 </div>
@@ -161,7 +175,7 @@ function LightboxStage({
       }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={alt} className="max-h-full max-w-full object-contain" />
+      <GalleryImage src={src} alt={alt} className="max-h-full max-w-full object-contain" />
     </div>
   );
 }
