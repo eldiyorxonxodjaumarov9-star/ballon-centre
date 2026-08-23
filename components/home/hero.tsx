@@ -16,8 +16,15 @@ export function Hero() {
           <br />
           mukammal ballon
         </h1>
-        <p className="mt-3 text-sm tracking-wide text-white/75">Sifat. Ishonchlilik. Xavfsizlik.</p>
-        <Link href="/catalog" className="mt-6 inline-flex">
+        <p className="mt-3 max-w-[18rem] text-[13px] leading-snug tracking-wide text-[#e8e0ff] sm:max-w-md sm:text-sm">
+          Avtomobilingiz uchun xohlagan turdagi shinalar olami.
+          <br />
+          To‘g‘ridan-to‘g‘ri distribyutordan!
+        </p>
+        <div className="mt-4 inline-flex max-w-full items-center rounded-full border border-white/20 bg-white/12 px-3 py-1.5 text-[11px] font-medium tracking-wide text-white/95 backdrop-blur-sm">
+          🚚 Yetkazib berish bepul
+        </div>
+        <Link href="/catalog" className="mt-5 inline-flex">
           <span className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-[12px] font-semibold tracking-[0.14em] text-[#3f2a9b] uppercase active:scale-[0.98]">
             Mahsulotlarni ko‘rish
             <ArrowRight size={16} />
