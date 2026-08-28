@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "dev:pg-test": "npx --yes -p embedded-postgres tsx scripts/dev-pg-test.ts",
+    "dev:pg-test": "tsx scripts/dev-pg-test.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -51,6 +51,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/telegram-web-app": "^9.6.0",
+    "embedded-postgres": "18.4.0-beta.17",
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
     "prisma": "^6.19.3",
