@@ -31,9 +31,14 @@ export default function AdminProductsPage() {
     <div>
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-sm font-semibold tracking-[0.2em] uppercase">Mahsulotlar</h1>
-        <Button asChild size="sm">
-          <Link href="/admin/products/new">Qo‘shish</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild size="sm" variant="outline">
+            <Link href="/admin/categories">Kategoriyalar</Link>
+          </Button>
+          <Button asChild size="sm">
+            <Link href="/admin/products/new">Qo‘shish</Link>
+          </Button>
+        </div>
       </div>
       <div className="mt-4 space-y-3">
         {products.length === 0 ? (

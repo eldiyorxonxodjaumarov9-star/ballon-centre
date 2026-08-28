@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, LayoutGrid, Layers, ShoppingBag, User } from "lucide-react";
 import { useCart, cartCount } from "@/hooks/use-cart";
+import { useUi } from "@/hooks/use-ui";
+import { blurActiveElement } from "@/lib/ui/keyboard";
 import { haptic } from "@/lib/telegram/webapp";
 import { cn } from "@/lib/utils";
 
@@ -18,10 +20,18 @@ const TABS = [
 export function BottomNav() {
   const pathname = usePathname();
   const count = cartCount(useCart((s) => s.items));
+  const searchOpen = useUi((s) => s.searchOpen);
+  const setSearchOpen = useUi((s) => s.setSearchOpen);
+
+  function navigate() {
+    blurActiveElement();
+    if (searchOpen) setSearchOpen(false);
+    haptic("light");
+  }
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 glass"
+      className={cn("fixed inset-x-0 bottom-0 z-40 glass", searchOpen && "z-[60]")}
       style={{ paddingBottom: "var(--safe-bottom)" }}
     >
       <div className="grid h-[72px] grid-cols-5">
@@ -35,7 +45,7 @@ export function BottomNav() {
             <Link
               key={tab.href}
               href={tab.href}
-              onClick={() => haptic("light")}
+              onClick={navigate}
               className={cn(
                 "relative flex flex-col items-center justify-center gap-1 text-[10px] tracking-wide",
                 active ? "text-[#c4b5ff]" : "text-[#b7b0d0]",

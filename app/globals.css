@@ -19,6 +19,8 @@
   --nav-h: 72px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --keyboard-inset: 0px;
+  --viewport-height: 100dvh;
 }
 
 @theme inline {
@@ -108,4 +110,8 @@ button {
 
 .page-pad {
   padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 16px);
+}
+
+html.scroll-locked {
+  overscroll-behavior: none;
 }

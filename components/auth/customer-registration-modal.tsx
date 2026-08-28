@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useScrollLock } from "@/hooks/use-scroll-lock";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiFetch } from "@/lib/api/client";
@@ -21,13 +22,14 @@ type MeResponse = {
 };
 
 export function CustomerRegistrationModal() {
-  const { ready, isTelegram, user, viewportHeight } = useTelegram();
+  const { ready, isTelegram, user } = useTelegram();
   const [checking, setChecking] = useState(true);
   const [open, setOpen] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
-  const [keyboardInset, setKeyboardInset] = useState(0);
+
+  useScrollLock(open || checking);
 
   useEffect(() => {
     if (!ready) return;
@@ -59,33 +61,6 @@ export function CustomerRegistrationModal() {
       cancelled = true;
     };
   }, [ready, isTelegram, user?.first_name]);
-
-  useEffect(() => {
-    if (!open) return;
-    const vv = window.visualViewport;
-    if (!vv) return;
-
-    const sync = () => {
-      const inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-      setKeyboardInset(inset);
-    };
-    sync();
-    vv.addEventListener("resize", sync);
-    vv.addEventListener("scroll", sync);
-    return () => {
-      vv.removeEventListener("resize", sync);
-      vv.removeEventListener("scroll", sync);
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (!open && !checking) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [open, checking]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -119,13 +94,10 @@ export function CustomerRegistrationModal() {
   if (!ready || !isTelegram) return null;
   if (!checking && !open) return null;
 
-  const viewport = viewportHeight || (typeof window !== "undefined" ? window.innerHeight : 640);
-  const sheetMax = Math.max(280, viewport - keyboardInset - 24);
-
   return (
     <div
       className="fixed inset-0 z-[100] flex items-end justify-center bg-[#05030f]/72 px-3 sm:items-center"
-      style={{ paddingBottom: keyboardInset > 0 ? keyboardInset + 8 : undefined }}
+      style={{ paddingBottom: "max(0px, var(--keyboard-inset))" }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="customer-reg-title"
@@ -136,7 +108,7 @@ export function CustomerRegistrationModal() {
       <div className="absolute inset-0" aria-hidden />
       <div
         className="relative z-10 w-full max-w-md overflow-y-auto rounded-[28px] border border-[rgba(139,116,255,0.28)] bg-[linear-gradient(165deg,#1a1236_0%,#120a28_55%,#0c081c_100%)] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
-        style={{ maxHeight: sheetMax }}
+        style={{ maxHeight: "min(90dvh, calc(var(--viewport-height, 100dvh) - var(--keyboard-inset) - 24px))" }}
       >
         {checking ? (
           <div className="flex min-h-[180px] flex-col items-center justify-center gap-3 py-8">

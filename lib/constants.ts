@@ -36,8 +36,8 @@ export const PAYMENT_LABEL: Record<string, string> = {
 };
 
 export const SUPPORT = {
-  telegramUrl: "https://t.me/eldiyortech",
-  telegramUsername: "@eldiyortech",
-  phoneDisplay: "+998 50 222 9 333",
-  phoneTel: "+998502229333",
+  telegramUrl: "https://t.me/dustmuhammedovich",
+  telegramUsername: "@dustmuhammedovich",
+  phoneDisplay: "+998 88 104 14 14",
+  phoneTel: "+998881041414",
 };

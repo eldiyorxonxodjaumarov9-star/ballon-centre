@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { blurActiveElement } from "@/lib/ui/keyboard";
 
 interface UiState {
   searchOpen: boolean;
@@ -12,6 +13,12 @@ interface UiState {
 export const useUi = create<UiState>((set) => ({
   searchOpen: false,
   filterOpen: false,
-  setSearchOpen: (searchOpen) => set({ searchOpen }),
-  setFilterOpen: (filterOpen) => set({ filterOpen }),
+  setSearchOpen: (searchOpen) => {
+    if (!searchOpen) blurActiveElement();
+    set({ searchOpen });
+  },
+  setFilterOpen: (filterOpen) => {
+    if (filterOpen) blurActiveElement();
+    set({ filterOpen });
+  },
 }));

@@ -5,6 +5,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import type { Brand, Category, ProductFilters, Season, SortOption } from "@/types";
 import { useUi } from "@/hooks/use-ui";
+import { useScrollLock } from "@/hooks/use-scroll-lock";
+import { blurActiveElement } from "@/lib/ui/keyboard";
 import { Button } from "@/components/ui/button";
 import { SEASON_LABEL } from "@/lib/constants";
 
@@ -55,6 +57,7 @@ export function FilterDrawer({
 }) {
   const open = useUi((s) => s.filterOpen);
   const setOpen = useUi((s) => s.setFilterOpen);
+  useScrollLock(open);
 
   const patch = (partial: ProductFilters) => onChange({ ...filters, ...partial });
 
@@ -64,7 +67,13 @@ export function FilterDrawer({
     <AnimatePresence>
       {open ? (
         <motion.div className="fixed inset-0 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          <button className="absolute inset-0 bg-black/70" onClick={() => setOpen(false)} aria-label="Yopish" />
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/70"
+            onPointerDown={() => blurActiveElement()}
+            onClick={() => setOpen(false)}
+            aria-label="Yopish"
+          />
           <motion.aside
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
@@ -125,14 +134,14 @@ export function FilterDrawer({
                   placeholder="Min"
                   value={filters.minPrice ?? ""}
                   onChange={(e) => patch({ minPrice: e.target.value ? Number(e.target.value) : undefined })}
-                  className="h-11 rounded-2xl border border-white/10 bg-[#0a0618] px-3 text-sm"
+                  className="h-11 rounded-2xl border border-white/10 bg-[#0a0618] px-3 text-base sm:text-sm"
                 />
                 <input
                   type="number"
                   placeholder="Max"
                   value={filters.maxPrice ?? ""}
                   onChange={(e) => patch({ maxPrice: e.target.value ? Number(e.target.value) : undefined })}
-                  className="h-11 rounded-2xl border border-white/10 bg-[#0a0618] px-3 text-sm"
+                  className="h-11 rounded-2xl border border-white/10 bg-[#0a0618] px-3 text-base sm:text-sm"
                 />
               </div>
             </Section>

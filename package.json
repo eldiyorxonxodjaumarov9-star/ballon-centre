@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:pg-test": "npx --yes -p embedded-postgres tsx scripts/dev-pg-test.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

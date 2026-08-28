@@ -11,7 +11,6 @@ import { ImagePlus, X } from "lucide-react";
 import { compressImage } from "@/lib/image/compress";
 import { formatPrice, groupThousands } from "@/lib/utils";
 import { ProductImage } from "@/components/product/product-image";
-import { TireVisual } from "@/components/product/tire-visual";
 import type { Category, Product, Season } from "@/types";
 
 const MAX_IMAGES = 6;
@@ -109,15 +108,21 @@ export function ProductForm({ product }: { product?: Product }) {
   };
 
   useEffect(() => {
-    void fetch("/api/admin/categories")
-      .then((r) => r.json())
-      .then((d) => setCategories(d.categories ?? []));
+    function loadCategories() {
+      void fetch("/api/admin/categories")
+        .then((r) => r.json())
+        .then((d) => setCategories(d.categories ?? []));
+    }
+    loadCategories();
+    const onFocus = () => loadCategories();
+    window.addEventListener("focus", onFocus);
     void fetch("/api/admin/settings")
       .then((r) => r.json())
       .then((d) => {
         if (d.usdRate) setUsdRate(String(d.usdRate));
       })
       .catch(() => undefined);
+    return () => window.removeEventListener("focus", onFocus);
   }, []);
 
   async function submit(e: React.FormEvent) {
@@ -285,6 +290,7 @@ export function ProductForm({ product }: { product?: Product }) {
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
               {c.emoji} {c.nameUz}
+              {!c.isActive ? " (nofaol)" : ""}
             </option>
           ))}
         </select>

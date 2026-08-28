@@ -1,6 +1,6 @@
 import { prisma, isMockMode } from "@/lib/db/prisma";
-import { CATEGORIES } from "@/lib/data/catalog";
 import { getStoredOrders, getStoredProducts, saveStoredProducts } from "@/lib/data/mock-store";
+import { getCategoryById } from "@/lib/services/category.service";
 import { normalizeProduct } from "@/lib/products/normalize";
 import { normalizeProductImages } from "@/lib/uploads/storage";
 import { productWriteSchema } from "@/lib/validations";
@@ -75,7 +75,8 @@ export async function adminCreateProduct(input: unknown) {
   const brand = brandFromName(brandName);
 
   if (isMockMode()) {
-    const category = CATEGORIES.find((c) => c.id === rest.categoryId) ?? CATEGORIES[0];
+    const category = await getCategoryById(rest.categoryId);
+    if (!category) throw new Error("Kategoriya topilmadi");
     const product: Product = normalizeProduct({
       id: `p-${Date.now()}`,
       slug: slugify(`${brand.name}-${rest.model}-${Date.now()}`),
@@ -137,6 +138,12 @@ export async function adminUpdateProduct(id: string, input: unknown) {
       ...rest,
       ...(rest.images ? { images: normalizeProductImages(rest.images) } : {}),
     });
+    if (rest.categoryId) {
+      const category = await getCategoryById(rest.categoryId);
+      if (!category) throw new Error("Kategoriya topilmadi");
+      updated.category = category;
+      updated.categoryId = category.id;
+    }
     if (brandName !== undefined) {
       const brand = brandFromName(brandName);
       updated.brand = brand;

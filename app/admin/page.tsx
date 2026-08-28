@@ -39,6 +39,9 @@ export default function AdminDashboardPage() {
           <Plus size={16} /> Mahsulot qo‘shish
         </Link>
       </Button>
+      <Button asChild variant="outline" className="mt-3 w-full">
+        <Link href="/admin/categories">Kategoriyalar</Link>
+      </Button>
       <div className="mt-5 grid grid-cols-2 gap-3">
         {cards.map((card) => (
           <div key={card.label} className="premium-card rounded-3xl p-4">

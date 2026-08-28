@@ -57,3 +57,6 @@ public/uploads/
 .next/
 node_modules/
 *.log
+
+# Local embedded PostgreSQL / build scratch
+.tmp/

@@ -1,7 +1,8 @@
 import { prisma, isMockMode } from "@/lib/db/prisma";
-import { BRANDS, CATEGORIES } from "@/lib/data/catalog";
+import { BRANDS } from "@/lib/data/catalog";
 import { getExtraProducts } from "@/lib/services/admin.service";
 import { normalizeProduct } from "@/lib/products/normalize";
+import { getCategoryBySlug as findCategoryBySlug, listShopCategories } from "@/lib/services/category.service";
 import type { Product, ProductFilters } from "@/types";
 
 function matchesQuery(product: Product, q?: string): boolean {
@@ -109,13 +110,11 @@ export async function getProductById(id: string): Promise<Product | null> {
 }
 
 export async function listCategories() {
-  if (isMockMode()) return CATEGORIES.filter((c) => c.isActive);
-  return prisma.category.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } });
+  return listShopCategories();
 }
 
 export async function getCategoryBySlug(slug: string) {
-  if (isMockMode()) return CATEGORIES.find((c) => c.slug === slug) ?? null;
-  return prisma.category.findUnique({ where: { slug } });
+  return findCategoryBySlug(slug);
 }
 
 export async function listBrands() {

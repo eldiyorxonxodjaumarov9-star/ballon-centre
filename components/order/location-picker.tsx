@@ -99,7 +99,7 @@ export function LocationPicker({
     }
   }
 
-  async function useMyLocation() {
+  async function fetchMyLocation() {
     setLoading(true);
     try {
       haptic("medium");
@@ -193,7 +193,7 @@ export function LocationPicker({
 
       <button
         type="button"
-        onClick={() => void useMyLocation()}
+        onClick={() => void fetchMyLocation()}
         disabled={loading}
         className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-[rgba(139,116,255,0.45)] bg-[rgba(63,42,155,0.28)] text-sm font-medium"
       >

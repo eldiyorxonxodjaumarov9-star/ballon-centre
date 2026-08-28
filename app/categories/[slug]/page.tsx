@@ -46,7 +46,7 @@ export default function CategoryDetailPage() {
           ))}
         </div>
       ) : products.length === 0 ? (
-        <EmptyState icon="🛞" title="Bu kategoriyada mahsulot yo‘q." />
+        <EmptyState icon="🛞" title="Bu kategoriyada hozircha mahsulotlar yo‘q." />
       ) : (
         <ProductGrid products={products} />
       )}

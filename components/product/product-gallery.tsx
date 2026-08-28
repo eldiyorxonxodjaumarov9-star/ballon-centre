@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { useScrollLock } from "@/hooks/use-scroll-lock";
 import { haptic } from "@/lib/telegram/webapp";
 
 type ProductGalleryProps = {
@@ -35,6 +36,7 @@ export function ProductGallery({ images, alt, badge, open, onOpenChange }: Produ
   const current = images[Math.min(index, Math.max(total - 1, 0))];
 
   useEffect(() => setMounted(true), []);
+  useScrollLock(open);
 
   const go = useCallback(
     (dir: -1 | 1) => {
@@ -52,11 +54,8 @@ export function ProductGallery({ images, alt, badge, open, onOpenChange }: Produ
       if (event.key === "ArrowLeft") go(-1);
       if (event.key === "ArrowRight") go(1);
     };
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKey);
     return () => {
-      document.body.style.overflow = prevOverflow;
       window.removeEventListener("keydown", onKey);
     };
   }, [open, go, onOpenChange]);

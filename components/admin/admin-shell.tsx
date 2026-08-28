@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, Package, PlusCircle, ShoppingBag, LogOut, CreditCard } from "lucide-react";
 import { BrandLogo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
+import { blurActiveElement } from "@/lib/ui/keyboard";
 import type { ReactNode } from "react";
 
 const TABS = [
@@ -19,7 +20,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
+  function navigate() {
+    blurActiveElement();
+  }
+
   async function logout() {
+    blurActiveElement();
     await fetch("/api/admin/logout", { method: "POST" });
     router.replace("/admin/login");
   }
@@ -60,6 +66,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               <Link
                 key={tab.href}
                 href={tab.href}
+                onClick={navigate}
                 className={cn(
                   "relative flex flex-col items-center justify-center gap-1 text-[10px]",
                   active ? "text-[#c4b5ff]" : "text-[#b7b0d0]",

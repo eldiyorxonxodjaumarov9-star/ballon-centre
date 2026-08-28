@@ -1,12 +1,15 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import type { CustomerAccount, Order, PaymentCard, Product } from "@/types";
+import { CATEGORIES } from "@/lib/data/catalog";
+import type { Category } from "@/types";
 
 const dir = path.join(process.cwd(), "data");
 const productsFile = path.join(dir, "products.json");
 const ordersFile = path.join(dir, "orders.json");
 const settingsFile = path.join(dir, "settings.json");
 const usersFile = path.join(dir, "users.json");
+const categoriesFile = path.join(dir, "categories.json");
 
 type ShopSettings = {
   paymentCards: PaymentCard[];
@@ -19,6 +22,7 @@ const globalForStore = globalThis as unknown as {
   mockProducts?: Product[];
   mockOrders?: Order[];
   mockUsers?: CustomerAccount[];
+  mockCategories?: Category[];
   shopSettings?: ShopSettings;
 };
 
@@ -236,4 +240,24 @@ export function saveStoredUser(account: CustomerAccount): CustomerAccount {
   globalForStore.mockUsers = next;
   writeJson(usersFile, next);
   return account;
+}
+
+function categories(): Category[] {
+  if (!globalForStore.mockCategories) {
+    const stored = readJson<Category[]>(categoriesFile, CATEGORIES);
+    globalForStore.mockCategories = stored;
+    if (!existsSync(categoriesFile)) {
+      writeJson(categoriesFile, stored);
+    }
+  }
+  return globalForStore.mockCategories;
+}
+
+export function getStoredCategories(): Category[] {
+  return categories();
+}
+
+export function saveStoredCategories(next: Category[]) {
+  globalForStore.mockCategories = next;
+  writeJson(categoriesFile, next);
 }

@@ -96,3 +96,17 @@ export const customerRegistrationSchema = z.object({
 export const orderStatusSchema = z.object({
   status: z.enum(["NEW", "DELIVERED", "PICKED_UP", "CONFIRMED", "PROCESSING", "DELIVERING", "COMPLETED", "CANCELLED"]),
 });
+
+export const categoryCreateSchema = z.object({
+  nameUz: z.string().trim().min(1, "Kategoriya nomini kiriting").max(80),
+  emoji: z.string().trim().min(1).max(8).optional(),
+  description: z.string().trim().max(200).optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const categoryUpdateSchema = z.object({
+  nameUz: z.string().trim().min(1, "Kategoriya nomini kiriting").max(80).optional(),
+  emoji: z.string().trim().min(1).max(8).optional(),
+  description: z.string().trim().max(200).optional(),
+  isActive: z.boolean().optional(),
+});

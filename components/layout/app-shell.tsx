@@ -7,6 +7,8 @@ import { BottomNav } from "@/components/layout/bottom-nav";
 import { PageTransition } from "@/components/layout/page-transition";
 import { SearchOverlay } from "@/components/search/search-overlay";
 import { CustomerRegistrationModal } from "@/components/auth/customer-registration-modal";
+import { ViewportSync } from "@/components/layout/viewport-sync";
+import { useDismissKeyboardOnOutsidePointer } from "@/hooks/use-keyboard-dismiss";
 import { Toaster } from "sonner";
 import { useCart } from "@/hooks/use-cart";
 import type { ReactNode } from "react";
@@ -15,6 +17,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? "/";
   const isAdmin = pathname.startsWith("/admin");
   const [toastsReady, setToastsReady] = useState(false);
+  useDismissKeyboardOnOutsidePointer(true);
 
   useEffect(() => {
     void useCart.persist.rehydrate();
@@ -23,6 +26,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className={isAdmin ? "min-h-dvh" : "mx-auto min-h-dvh w-full max-w-6xl"}>
+      <ViewportSync />
       {isAdmin ? null : <Header />}
       <main className={isAdmin ? "" : "page-pad"}>
         <PageTransition>{children}</PageTransition>
