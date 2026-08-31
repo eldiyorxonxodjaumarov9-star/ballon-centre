@@ -15,6 +15,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "bot": "tsx --env-file=.env bot/index.ts",
+    "test:product-search": "node --import tsx scripts/test-product-search.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {

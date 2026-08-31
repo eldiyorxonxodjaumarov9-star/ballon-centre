@@ -2,33 +2,14 @@ import { prisma, isMockMode } from "@/lib/db/prisma";
 import { BRANDS } from "@/lib/data/catalog";
 import { getExtraProducts } from "@/lib/services/admin.service";
 import { normalizeProduct } from "@/lib/products/normalize";
+import { matchesProductQuery } from "@/lib/products/search";
 import { getCategoryBySlug as findCategoryBySlug, listShopCategories } from "@/lib/services/category.service";
 import type { Product, ProductFilters } from "@/types";
-
-function matchesQuery(product: Product, q?: string): boolean {
-  if (!q) return true;
-  const haystack = [
-    product.brand.name,
-    product.model,
-    product.name,
-    product.category.nameUz,
-    product.category.name,
-    `${product.width}/${product.profile} R${product.diameter}`,
-    `${product.width}V`,
-    `${product.profile}Ah`,
-    `R${product.diameter}`,
-    String(product.width),
-    product.season,
-  ]
-    .join(" ")
-    .toLowerCase();
-  return haystack.includes(q.toLowerCase().trim());
-}
 
 export function filterProducts(products: Product[], filters: ProductFilters): Product[] {
   let result = products.filter((product) => {
     if (!product.isActive || product.isArchived) return false;
-    if (!matchesQuery(product, filters.q)) return false;
+    if (!matchesProductQuery(product, filters.q)) return false;
     if (filters.brand && product.brand.slug !== filters.brand && product.brandId !== filters.brand) return false;
     if (
       filters.category &&

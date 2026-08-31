@@ -42,7 +42,11 @@ export function SearchOverlay() {
     };
   }, [open, query]);
 
-  const visible = useMemo(() => products.slice(0, 8), [products]);
+  const normalizedQuery = query.trim();
+  const visible = useMemo(
+    () => (normalizedQuery ? products : products.slice(0, 8)),
+    [normalizedQuery, products],
+  );
 
   return (
     <AnimatePresence>
@@ -91,6 +95,11 @@ export function SearchOverlay() {
               ref={resultsRef}
               className="mt-4 flex-1 overflow-y-auto pb-4"
             >
+              {normalizedQuery && products.length > 0 ? (
+                <p className="mb-3 text-xs text-[#B8B0D9]" aria-live="polite">
+                  {products.length} ta mahsulot topildi
+                </p>
+              ) : null}
               {query && visible.length === 0 ? (
                 <EmptyState
                   icon="🔍"
